@@ -9,6 +9,9 @@ import { Room } from "./entity/Room";
 import { RoomUser } from "./entity/RoomUser";
 import { ChatUser } from "./types";
 import cors from "cors";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 createConnection({
   type: "postgres",
@@ -27,6 +30,10 @@ createConnection({
         origin: process.env.FRONTEND_URL,
       })
     );
+
+    app.get("/", (_, res) => {
+      res.send("Hello");
+    });
 
     const apolloServer = new ApolloServer({
       schema: await buildSchema({ resolvers: [RoomResolver] }),
