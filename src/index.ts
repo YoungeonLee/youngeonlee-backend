@@ -27,6 +27,8 @@ createConnection({
       // context: { conn: connection },
     });
 
+    console.log("front end address:", process.env.FRONTEND_URL);
+
     // setup express app here
     apolloServer.applyMiddleware({
       app,
