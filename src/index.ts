@@ -8,7 +8,7 @@ import { Server, Socket } from "socket.io";
 import { Room } from "./entity/Room";
 import { RoomUser } from "./entity/RoomUser";
 import { ChatUser } from "./types";
-// import cors from "cors";
+import cors from "cors";
 
 createConnection({
   type: "postgres",
@@ -17,13 +17,14 @@ createConnection({
   .then(async (connection) => {
     // create express app
     const app = express();
-    // app.use(
-    //   cors({
-    //     origin: process.env.FRONT_END_URL,
-    //   })
-    // );
 
     app.enable("trust proxy");
+
+    app.use(
+      cors({
+        origin: process.env.FRONTEND_URL,
+      })
+    );
 
     const apolloServer = new ApolloServer({
       schema: await buildSchema({ resolvers: [RoomResolver] }),
@@ -35,7 +36,7 @@ createConnection({
     // setup express app here
     apolloServer.applyMiddleware({
       app,
-      cors: { origin: process.env.FRONTEND_URL },
+      cors: false,
     });
 
     // start express server
