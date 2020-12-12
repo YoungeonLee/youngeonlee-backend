@@ -13,6 +13,8 @@ import cors from "cors";
 createConnection({
   type: "postgres",
   url: process.env.DATABASE_URL,
+  synchronize: true,
+  entities: [Room, RoomUser],
 })
   .then(async (connection) => {
     // create express app
