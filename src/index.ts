@@ -10,7 +10,10 @@ import { RoomUser } from "./entity/RoomUser";
 import { ChatUser } from "./types";
 // import cors from "cors";
 
-createConnection()
+createConnection({
+  type: "postgres",
+  url: process.env.DATABASE_URL,
+})
   .then(async (connection) => {
     // create express app
     const app = express();
