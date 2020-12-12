@@ -23,7 +23,7 @@ createConnection({
     //   })
     // );
 
-    app.set("trust proxy", 1);
+    app.enable("trust proxy");
 
     const apolloServer = new ApolloServer({
       schema: await buildSchema({ resolvers: [RoomResolver] }),
