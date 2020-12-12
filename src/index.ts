@@ -22,6 +22,9 @@ createConnection({
     //     origin: process.env.FRONT_END_URL,
     //   })
     // );
+
+    app.set("trust proxy", 1);
+
     const apolloServer = new ApolloServer({
       schema: await buildSchema({ resolvers: [RoomResolver] }),
       // context: { conn: connection },
