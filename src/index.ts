@@ -10,6 +10,7 @@ import { RoomUser } from "./entity/RoomUser";
 import { ChatUser } from "./types";
 import cors from "cors";
 import dotenv from "dotenv";
+import argon2 from "argon2";
 
 dotenv.config();
 
@@ -62,22 +63,22 @@ createConnection({
     const videoChat = io.of("/video-chat");
 
     videoChat.on("connect", (socket: Socket) => {
-      console.log("new socket:", socket.id);
-
       // join room
       socket.on(
         "join-room",
-        async (roomName: string, userInput: ChatUser, creatorKey: string) => {
-          console.log("findOne room");
+        async (
+          roomName: string,
+          userInput: ChatUser,
+          creatorKey: string,
+          password: string
+        ) => {
           const room = await Room.findOne(
             { roomName: roomName },
             { relations: ["users"] }
           );
-          console.log("if not room");
           if (!room) {
             return socket.emit("server-error", `No room named ${roomName}`);
           }
-          console.log("if max people");
           if (room.maxPeople <= room.users.length) {
             return socket.emit(
               "server-error",
@@ -87,18 +88,27 @@ createConnection({
           let admin = false;
           if (creatorKey === room.creatorKey) {
             admin = true;
+          } else {
+            if (room.private) {
+              await new Promise((resolve) => {
+                setTimeout(resolve, 1000);
+              });
+              if (password === "") {
+                return socket.emit("password-required");
+              }
+              if (!(await argon2.verify(room.password, password))) {
+                return socket.emit("wrong-password");
+              }
+            }
           }
-          console.log("new user");
           const user = new RoomUser();
           user.username = userInput.name;
           user.admin = admin;
           user.room = room;
           user.color = userInput.color;
-          console.log("save user");
           await user.save();
           // when user leaves clear data
           socket.on("disconnect", async () => {
-            console.log("remove user");
             socket.to(room.secretKey).emit(
               "user-disconnected",
               {
@@ -109,9 +119,7 @@ createConnection({
             );
             await user.remove();
             const users = await RoomUser.find({ room: room });
-            console.log("room length:", users.length);
             if (users.length === 0) {
-              console.log("remove room");
               return await room.remove();
             }
           });
@@ -139,7 +147,6 @@ createConnection({
 
       // calling specific user
       socket.on("call-user", (data, socketId) => {
-        console.log("call user", socketId);
         videoChat.to(socketId).emit("call-received", data, socket.id);
       });
 
