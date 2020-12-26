@@ -44,7 +44,7 @@ export class RoomResolver {
 
   @Query(() => [Room])
   rooms() {
-    return Room.find({ relations: ["users"] });
+    return Room.find({ relations: ["users"], where: { private: false } });
   }
 
   @Mutation(() => Room)
